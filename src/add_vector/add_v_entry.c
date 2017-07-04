@@ -105,11 +105,11 @@ int main( int argc , char *argv[] )
 
     /* Display data */
     debug("Data :") ;
-    for(idx_i=0 ; idx_i < meta.dim.dim_3d.dim_x ; idx_i++ ) {
-        printf("\n[x-%u] ", idx_i);
+    for(idx_i=0 ; idx_i < meta.dim.dim_3d.dim_z ; idx_i++ ) {
+        printf("\n[z-%u] ", idx_i);
         for(idx_j=0 ; idx_j < meta.dim.dim_3d.dim_y ; idx_j++ ) {
             printf("| <y-%u> ", idx_j);
-            for(idx_k=0 ; idx_k < meta.dim.dim_3d.dim_z ; idx_k++ )
+            for(idx_k=0 ; idx_k < meta.dim.dim_3d.dim_x ; idx_k++ )
                 printf("%d,", buff3D[idx_i][idx_j][idx_k] );
         }
     }

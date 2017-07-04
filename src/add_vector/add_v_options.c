@@ -36,7 +36,7 @@ Option_Help g_help_strings[] =
 {
     { .option = 'f', .option_text = "-f,--file...input data file. Each data point is line-separated"                                 },
     { .option = 'd', .option_text = "-d,--dtype..data-types. Use (u)int8,(u)int16,(u)int32,(u)int64,float,double,longdouble"         },
-    { .option = 's', .option_text = "-s,--sep....Separator list. Separators should be in reverse order. [^:|] implies z->^,y->:,x->|"},
+    { .option = 's', .option_text = "-s,--sep....Separator list. Separators should be in reverse order. [^:|] implies x->^,y->:,z->|"},
     { .option = 'h', .option_text = "-h,--help...this help menu"                                                                     },
     { .option =  0 , .option_text = NULL                                                                                             },
 };

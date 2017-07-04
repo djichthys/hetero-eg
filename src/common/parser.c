@@ -575,11 +575,11 @@ static inline uint32_t _3D_sizeof_dim( Vector_MetaData *meta , uint32_t dim )
 {
     uint64_t dim_size = 0 ;
     if((dim+1) == 1 )
-        dim_size = meta->dim.dim_3d.dim_x ;
+        dim_size = meta->dim.dim_3d.dim_z ;
     else if((dim+1) == 2 )
         dim_size = meta->dim.dim_3d.dim_y ;
     else if((dim+1) == 3 )
-        dim_size = meta->dim.dim_3d.dim_z ;
+        dim_size = meta->dim.dim_3d.dim_x ;
 
     return dim_size ;
 }
@@ -768,27 +768,28 @@ static api_Err_Status _parse_data_3D( void ***buff, uint8_t *file_content , uint
         goto err_3D_parse ;
     }
 
-    sep_x[0] = sep_list[2];   /* Third delimiter is for dimension-x */
+    sep_x[0] = sep_list[0];   /* First delimiter is for dimension-x */
     sep_y[0] = sep_list[1];   /* Second delimiter is for dimension-y */
-    sep_z[0] = sep_list[0];   /* First delimiter is for dimension-z */
+    sep_z[0] = sep_list[2];   /* Third delimiter is for dimension-z */
 
     /* Parse files for data and convert */
-    for( dimx_ptr = strtok_r(file_content, sep_x, &save_x) , idx_i = 0 ;
-                dimx_ptr != NULL ; dimx_ptr = strtok_r(NULL, sep_x, &save_x), idx_i++) {
-        for( dimy_ptr = strtok_r(dimx_ptr, sep_y, &save_y) , idx_j = 0 ;
+    for( dimz_ptr = strtok_r(file_content, sep_z, &save_z) , idx_i = 0 ;
+                dimz_ptr != NULL ; dimz_ptr = strtok_r(NULL, sep_z, &save_z), idx_i++) {
+        for( dimy_ptr = strtok_r(dimz_ptr, sep_y, &save_y) , idx_j = 0 ;
                     dimy_ptr != NULL ; dimy_ptr = strtok_r(NULL, sep_y, &save_y) , idx_j++) {
-            for( dimz_ptr = strtok_r(dimy_ptr, sep_z, &save_z) , idx_k = 0 ;
-                        dimz_ptr != NULL ; dimz_ptr = strtok_r(NULL, sep_z, &save_z) , idx_k++) {
+            for( dimx_ptr = strtok_r(dimy_ptr, sep_x, &save_x) , idx_k = 0 ;
+                        dimx_ptr != NULL ; dimx_ptr = strtok_r(NULL, sep_x, &save_x) , idx_k++) {
 
-                err = _convert_to_number( dimz_ptr, meta, (void *)(**buff),
-                                          (idx_i * meta->dim.dim_3d.dim_y * meta->dim.dim_3d.dim_z) + (idx_j * meta->dim.dim_3d.dim_z) +  idx_k );
+                err = _convert_to_number( dimx_ptr, meta, (void *)(**buff),
+                                          (idx_i * meta->dim.dim_3d.dim_y * meta->dim.dim_3d.dim_x) + (idx_j * meta->dim.dim_3d.dim_x) +  idx_k );
                 if( err != api_Success ) {
                     debug("Error converting string to value. index = %u, err = %d", idx_i, err );
                     goto err_3D_parse ;
                 }
-            }   /* for each item in dim-z */
+            }   /* for each item in dim-x */
         }   /* for each item in dim-y */
-    }   /* for each item in dim-x */
+    }   /* for each item in dim-z */
+
 
 err_3D_parse :
     return err ;
@@ -1152,7 +1153,7 @@ static api_Err_Status _detect_3D_sizes( uint8_t *buff, uint8_t *sep_list, Vector
 
 
     /*!
-     * First step - calculate number of items in dimension-Z
+     * First step - calculate number of items in dimension-X
      */
     dimy_ptr = strchr( content, (int)sep_list[1] );
     if( dimy_ptr == NULL ) {
@@ -1169,11 +1170,11 @@ static api_Err_Status _detect_3D_sizes( uint8_t *buff, uint8_t *sep_list, Vector
         goto err_3D_item_detect ;
     }
 
-    /* Count number of items in dimension-z */
-    sep[0] = sep_list[0];    /* 1st char -denotes z axis delimiter */
-    for( dimz_ptr = strtok_r(linebuff, sep, &ptr) ;
-                       dimz_ptr != NULL ; dimz_ptr = strtok_r(NULL, sep, &ptr) )
-        meta->dim.dim_3d.dim_z++ ;
+    /* Count number of items in dimension-x */
+    sep[0] = sep_list[0];    /* 1st char -denotes x axis delimiter */
+    for( dimx_ptr = strtok_r(linebuff, sep, &ptr) ;
+                       dimx_ptr != NULL ; dimx_ptr = strtok_r(NULL, sep, &ptr) )
+        meta->dim.dim_3d.dim_x++ ;
 
     free(linebuff);
     linebuff = NULL ;
@@ -1181,15 +1182,15 @@ static api_Err_Status _detect_3D_sizes( uint8_t *buff, uint8_t *sep_list, Vector
     /*!
      * Second step - calculate number of items in dimension-Y
      */
-    dimx_ptr = strchr( content, (int)sep_list[2] );
-    if( dimx_ptr == NULL ) {
-        debug("Could not detect dimension-x-separator in 3-D data");
+    dimz_ptr = strchr( content, (int)sep_list[2] );
+    if( dimz_ptr == NULL ) {
+        debug("Could not detect dimension-z-separator in 3-D data");
         err = api_Err_Memory ;
         goto err_3D_item_detect ;
     }
 
 
-    linebuff = strndup( content,(dimx_ptr - content));
+    linebuff = strndup( content,(dimz_ptr - content));
     if( linebuff == NULL ) {
         debug("Could not duplicate data buffer in RAM to count items");
         err = api_Err_Memory ;
@@ -1205,11 +1206,11 @@ static api_Err_Status _detect_3D_sizes( uint8_t *buff, uint8_t *sep_list, Vector
     free(linebuff);
     linebuff = NULL ;
 
-    /* Count number of items in dim-x  */
-    sep[0] = sep_list[2];    /* 3rd char -denotes dim-x delimiter */
+    /* Count number of items in dim-z  */
+    sep[0] = sep_list[2];    /* 3rd char -denotes dim-z delimiter */
     for( linebuff = strtok_r(content, sep, &ptr) ;
                        linebuff != NULL ; linebuff = strtok_r(NULL, sep, &ptr) )
-        meta->dim.dim_3d.dim_x++ ;
+        meta->dim.dim_3d.dim_z++ ;
 
 
 err_3D_item_detect :
